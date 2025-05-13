@@ -1349,16 +1349,39 @@ void WiFiManager::handleRequest() {
 /** 
  * HTTPD CALLBACK root or redirect to captive portal
  */
-void WiFiManager::handleRoot() {
-  #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Root"));
-  #endif
-  if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+void WiFiManager::handleRoot()
+{
+#ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(WM_DEBUG_VERBOSE, F("<- HTTP Root"));
+#endif
+  if (captivePortal())
+    return; // If captive portal redirect instead of displaying the page
   handleRequest();
-  String page = "<h1>Hello, World!</h1>"; // @token options @todo replace options with title
 
-  HTTPSend(page);
-  if(_preloadwifiscan) WiFi_scanNetworks(_scancachetime,true); // preload wifiscan throttled, async
+  String path = "/templates/index.html";
+
+  if (SPIFFS.exists(path))
+  {
+    File file = SPIFFS.open(path, "r");
+    String content = "";
+
+    while (file.available())
+    {
+      content += (char)file.read();
+    }
+
+    file.close();
+
+    // Send the file content with appropriate header
+    server->send(200, "text/html", content);
+  }
+  else
+  {
+    server->send(404, "text/plain", "index.html not found");
+  }
+
+  if (_preloadwifiscan)
+    WiFi_scanNetworks(_scancachetime, true); // preload wifiscan throttled, async
   // @todo buggy, captive portals make a query on every page load, causing this to run every time in addition to the real page load
   // I dont understand why, when you are already in the captive portal, I guess they want to know that its still up and not done or gone
   // if we can detect these and ignore them that would be great, since they come from the captive portal redirect maybe there is a refferer
