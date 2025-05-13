@@ -39,7 +39,7 @@ void writeFile(fs::FS &fs, const char * path, const char * message){
 
 int data = 4; 
 
-#include <WiFiManager.h>
+#include <ESP32-WiFiManager.h>
 #define TRIGGER_PIN 2
 int timeout = 120; // seconds to run for
 

@@ -1,5 +1,5 @@
 /**
- * WiFiManager.h
+ * ESP32-WiFiManager.h
  * 
  * WiFiManager, a library for the ESP8266/Arduino platform
  * for configuration of WiFi credentials using a Captive Portal

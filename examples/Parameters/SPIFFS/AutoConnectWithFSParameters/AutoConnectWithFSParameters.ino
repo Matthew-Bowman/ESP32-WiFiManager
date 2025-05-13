@@ -1,5 +1,5 @@
 #include <FS.h>                   //this needs to be first, or it all crashes and burns...
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <ESP32-WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 
 #ifdef ESP32
   #include <SPIFFS.h>

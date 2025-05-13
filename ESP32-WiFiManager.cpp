@@ -1,5 +1,5 @@
 /**
- * WiFiManager.cpp
+ * ESP32-WiFiManager.cpp
  * 
  * WiFiManager, a library for the ESP8266/Arduino platform
  * for configuration of WiFi credentials using a Captive Portal
@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-#include "WiFiManager.h"
+#include "ESP32-WiFiManager.h"
 
 #if defined(ESP8266) || defined(ESP32)
 

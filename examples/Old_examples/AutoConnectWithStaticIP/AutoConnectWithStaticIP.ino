@@ -1,5 +1,5 @@
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <ESP32-WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
 /**************************************************************************************
  * this example shows how to set a static IP configuration for the ESP

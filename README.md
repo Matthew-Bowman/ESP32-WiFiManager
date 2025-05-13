@@ -135,7 +135,7 @@ __Github version works with release 2.4.0 or newer of the [ESP8266 core for Ardu
 ### Using
 - Include in your sketch
 ```cpp
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#include <ESP32-WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 ```
 
 - Initialize library, in your setup function add, NOTEif you are using non blocking you will make sure you create this in global scope or handle appropriatly , it will not work if in setup and using non blocking mode.
