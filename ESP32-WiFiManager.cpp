@@ -11,6 +11,8 @@
  */
 
 #include "ESP32-WiFiManager.h"
+#include "SPIFFS.h"
+#include <FS.h>
 
 #if defined(ESP8266) || defined(ESP32)
 
@@ -636,6 +638,12 @@ void WiFiManager::setupHTTPServer(){
     #endif
     _webservercallback(); // @CALLBACK
   }
+
+  if (!SPIFFS.begin()) {
+    Serial.println("SPIFFS initialization failed");
+    return;
+  }
+
   // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
   
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
@@ -2399,29 +2407,38 @@ void WiFiManager::handleErase(boolean opt) {
 /** 
  * HTTPD CALLBACK 404
  */
-void WiFiManager::handleNotFound() {
-  if (captivePortal()) return; // If captive portal redirect instead of displaying the page
-  handleRequest();
-  String message = FPSTR(S_notfound); // @token notfound
+void WiFiManager::handleNotFound()
+{
+  String path = server->uri(); // Get the requested file path from the URL
 
-  bool verbose404 = false; // show info in 404 body, uri,method, args
-  if(verbose404){
-    message += FPSTR(S_uri); // @token uri
-    message += server->uri();
-    message += FPSTR(S_method); // @token method
-    message += ( server->method() == HTTP_GET ) ? FPSTR(S_GET) : FPSTR(S_POST);
-    message += FPSTR(S_args); // @token args
-    message += server->args();
-    message += F("\n");
+  // Check if the requested file exists in SPIFFS
+  if (SPIFFS.exists(path))
+  {
+    File file = SPIFFS.open(path, "r");
 
-    for ( uint8_t i = 0; i < server->args(); i++ ) {
-      message += " " + server->argName ( i ) + ": " + server->arg ( i ) + "\n";
+    // Determine the correct content type
+    String contentType = "text/plain"; // Default
+    if (path.endsWith(".ttf"))
+    {
+      contentType = "font/ttf";
     }
+    else if (path.endsWith(".css"))
+    {
+      contentType = "text/css";
+    }
+    else if (path.endsWith(".js"))
+    {
+      contentType = "application/javascript";
+    }
+
+    // Stream file with correct content type
+    server->streamFile(file, contentType);
+    file.close();
   }
-  server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate")); // @HTTPHEAD send cache
-  server->sendHeader(F("Pragma"), F("no-cache"));
-  server->sendHeader(F("Expires"), F("-1"));
-  server->send ( 404, FPSTR(HTTP_HEAD_CT2), message );
+  else
+  {
+    server->send(404, "text/plain", "File Not Found");
+  }
 }
 
 /**
