@@ -686,7 +686,6 @@ protected:
     void          handleErase(boolean opt);
     void          handleParam();
     void          handleWiFiStatus();
-    void          handleRequest();
     void          handleParamSave();
     void          doParamSave();
 

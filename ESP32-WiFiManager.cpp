@@ -1322,33 +1322,6 @@ void WiFiManager::HTTPSend(const String &content){
 }
 
 /** 
- * HTTPD handler for page requests
- */
-void WiFiManager::handleRequest() {
-  _webPortalAccessed = millis();
-
-  // TESTING HTTPD AUTH RFC 2617
-  // BASIC_AUTH will hold onto creds, hard to "logout", but convienent
-  // DIGEST_AUTH will require new auth often, and nonce is random
-  // bool authenticate(const char * username, const char * password);
-  // bool authenticateDigest(const String& username, const String& H1);
-  // void requestAuthentication(HTTPAuthMethod mode = BASIC_AUTH, const char* realm = NULL, const String& authFailMsg = String("") );
-
-  // 2.3 NO AUTH available
-  bool testauth = false;
-  if(!testauth) return;
-  
-  DEBUG_WM(WM_DEBUG_DEV,F("DOING AUTH"));
-  bool res = server->authenticate("admin","12345");
-  if(!res){
-    #ifndef WM_NOAUTH
-    server->requestAuthentication(HTTPAuthMethod::BASIC_AUTH); // DIGEST_AUTH
-    #endif
-    DEBUG_WM(WM_DEBUG_DEV,F("AUTH FAIL"));
-  }
-}
-
-/** 
  * HTTPD CALLBACK root or redirect to captive portal
  */
 void WiFiManager::handleRoot()
@@ -1356,9 +1329,6 @@ void WiFiManager::handleRoot()
 #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE, F("<- HTTP Root"));
 #endif
-  if (captivePortal())
-    return; // If captive portal redirect instead of displaying the page
-  handleRequest();
 
   String path = "/templates/index.html";
 
@@ -1396,7 +1366,7 @@ void WiFiManager::handleWifi(boolean scan) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Wifi"));
   #endif
-  handleRequest();
+  
   String page = getHTTPHead(FPSTR(S_titlewifi), FPSTR(C_wifi)); // @token titlewifi
   if (scan) {
     #ifdef WM_DEBUG_LEVEL
@@ -1452,7 +1422,7 @@ void WiFiManager::handleParam(){
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Param"));
   #endif
-  handleRequest();
+  
   String page = getHTTPHead(FPSTR(S_titleparam), FPSTR(C_param)); // @token titlewifi
 
   String pitem = "";
@@ -1832,7 +1802,7 @@ void WiFiManager::handleWiFiStatus(){
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP WiFi status "));
   #endif
-  handleRequest();
+
   String page;
   // String page = "{\"result\":true,\"count\":1}";
   #ifdef WM_JSTEST
@@ -1849,7 +1819,6 @@ void WiFiManager::handleWifiSave() {
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP WiFi save "));
   DEBUG_WM(WM_DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   #endif
-  handleRequest();
 
   //SAVE/connect here
   _ssid = server->arg(F("s")).c_str();
@@ -1947,7 +1916,6 @@ void WiFiManager::handleParamSave() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   #endif
-  handleRequest();
 
   doParamSave();
 
@@ -2016,7 +1984,7 @@ void WiFiManager::handleInfo() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Info"));
   #endif
-  handleRequest();
+  
   String page = getHTTPHead(FPSTR(S_titleinfo), FPSTR(C_info)); // @token titleinfo
   reportStatus(page);
 
@@ -2361,7 +2329,7 @@ void WiFiManager::handleExit() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Exit"));
   #endif
-  handleRequest();
+
   String page = getHTTPHead(FPSTR(S_titleexit), FPSTR(C_exit)); // @token titleexit
   page += FPSTR(S_exiting); // @token exiting
   page += getHTTPEnd();
@@ -2379,7 +2347,7 @@ void WiFiManager::handleReset() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Reset"));
   #endif
-  handleRequest();
+  
   String page = getHTTPHead(FPSTR(S_titlereset), FPSTR(C_restart)); //@token titlereset
   page += FPSTR(S_resetting); //@token resetting
   page += getHTTPEnd();
@@ -2404,7 +2372,7 @@ void WiFiManager::handleErase(boolean opt) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_NOTIFY,F("<- HTTP Erase"));
   #endif
-  handleRequest();
+  
   String page = getHTTPHead(FPSTR(S_titleerase), FPSTR(C_erase)); // @token titleerase
 
   bool ret = erase(opt);
@@ -2434,6 +2402,9 @@ void WiFiManager::handleErase(boolean opt) {
  */
 void WiFiManager::handleNotFound()
 {
+
+  if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+
   String path = server->uri(); // Get the requested file path from the URL
 
   // Check if the requested file exists in SPIFFS
@@ -2518,7 +2489,7 @@ void WiFiManager::handleClose(){
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP close"));
   #endif
-  handleRequest();
+  
   String page = getHTTPHead(FPSTR(S_titleclose), FPSTR(C_close)); // @token titleclose
   page += FPSTR(S_closing); // @token closing
   page += getHTTPEnd();
