@@ -13,8 +13,8 @@
 #include "ESP32-WiFiManager.h"
 #include "SPIFFS.h"
 #include <FS.h>
-#include "MenuManager.h"
-#include "Menu.h"
+#include "Menu/MenuManager.h"
+#include "Menu/Menu.h"
 
 #if defined(ESP8266) || defined(ESP32)
 
